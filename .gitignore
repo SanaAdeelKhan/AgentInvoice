@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Environment variables
+.env
+*.env
+!.env.template
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Foundry
+cache/
+broadcast/
+out/
+
+# Logs
+*.log
+
+# Local config
+.agent-invoice/

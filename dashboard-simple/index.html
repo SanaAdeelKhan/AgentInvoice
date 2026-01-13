@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentInvoice Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4">
+                <h1 class="text-3xl font-bold text-gray-900">
+                    ⚡ AgentInvoice Dashboard
+                </h1>
+                <p class="text-gray-600">Auditable billing for AI agents on Arc Testnet</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 px-4">
+            <!-- Connection Status -->
+            <div id="connection-status" class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-blue-800">🔗 Connected to Arc Testnet</p>
+                <p class="text-sm text-blue-600 mt-1">Contract: 0xDBe8c11e3e72062f6A8b3c64EBF8ED262B5D3A1b</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-500 text-sm font-medium">Total Invoices</h3>
+                    <p id="total-invoices" class="text-3xl font-bold text-gray-900">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-500 text-sm font-medium">Pending</h3>
+                    <p id="pending-invoices" class="text-3xl font-bold text-yellow-600">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-500 text-sm font-medium">Paid</h3>
+                    <p id="paid-invoices" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-500 text-sm font-medium">Held</h3>
+                    <p id="held-invoices" class="text-3xl font-bold text-red-600">0</p>
+                </div>
+            </div>
+
+            <!-- Invoice List -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-xl font-semibold text-gray-900">Recent Invoices</h2>
+                    <a href="https://testnet.arcscan.app/address/0xDBe8c11e3e72062f6A8b3c64EBF8ED262B5D3A1b" 
+                       target="_blank"
+                       class="text-sm text-blue-600 hover:text-blue-800">
+                        View on Explorer →
+                    </a>
+                </div>
+                <div id="invoice-list" class="p-6">
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 class="mt-4 text-lg font-medium text-gray-900">No invoices yet</h3>
+                        <p class="mt-2 text-sm text-gray-500">Get started by creating an invoice using the CLI or SDK.</p>
+                        
+                        <div class="mt-8 space-y-4">
+                            <div class="bg-gray-50 p-4 rounded-lg text-left max-w-2xl mx-auto">
+                                <h4 class="font-semibold text-gray-900 mb-2">🚀 Quick Start:</h4>
+                                <pre class="text-xs text-gray-700 bg-white p-3 rounded border overflow-x-auto">
+# Using CLI
+node dist/index.js list --payer YOUR_ADDRESS
+
+# Or check the contract directly
+https://testnet.arcscan.app/address/0xDBe8c11e3e72062f6A8b3c64EBF8ED262B5D3A1b</pre>
+                            </div>
+                            
+                            <div class="flex justify-center gap-4">
+                                <a href="https://testnet.arcscan.app/address/0xDBe8c11e3e72062f6A8b3c64EBF8ED262B5D3A1b" 
+                                   target="_blank"
+                                   class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                                    📊 View Contract
+                                </a>
+                                <a href="https://github.com/yourusername/agent-invoice" 
+                                   target="_blank"
+                                   class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    📖 Documentation
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contract Info -->
+            <div class="mt-8 bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">📝 Contract Information</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Network:</span>
+                        <span class="font-mono text-gray-900">Arc Testnet</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Chain ID:</span>
+                        <span class="font-mono text-gray-900">5042002</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">InvoiceRegistry:</span>
+                        <a href="https://testnet.arcscan.app/address/0xDBe8c11e3e72062f6A8b3c64EBF8ED262B5D3A1b" 
+                           target="_blank"
+                           class="font-mono text-blue-600 hover:text-blue-800 text-xs">
+                            0xDBe8...3A1b
+                        </a>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">PolicyManager:</span>
+                        <a href="https://testnet.arcscan.app/address/0xA521c6e8ff51080AF7a29ad5DF5bB5EeB33c5642" 
+                           target="_blank"
+                           class="font-mono text-blue-600 hover:text-blue-800 text-xs">
+                            0xA521...5642
+                        </a>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">PaymentProcessor:</span>
+                        <a href="https://testnet.arcscan.app/address/0x0C01067bd6D69D64409D505B28B9726cD354E49b" 
+                           target="_blank"
+                           class="font-mono text-blue-600 hover:text-blue-800 text-xs">
+                            0x0C01...E49b
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="max-w-7xl mx-auto py-6 px-4 mt-12 border-t border-gray-200">
+            <p class="text-center text-gray-500 text-sm">
+                Built for <strong>Agentic Commerce on Arc</strong> Hackathon 🚀
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Simple static dashboard - no ethers needed for display
+        console.log('✅ AgentInvoice Dashboard loaded');
+        console.log('📊 Contract: 0xDBe8c11e3e72062f6A8b3c64EBF8ED262B5D3A1b');
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "name": "agent-invoice-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for AgentInvoice - Auditable billing for AI agents",
+  "main": "dist/index.js",
+  "bin": {
+    "agent-invoice": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["invoice", "billing", "arc", "blockchain", "ai-agents"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.2",
+    "dotenv": "^17.2.3",
+    "inquirer": "^13.1.0",
+    "ora": "^9.0.0",
+    "sdk": "file:../sdk"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.9",
+    "@types/node": "^25.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
