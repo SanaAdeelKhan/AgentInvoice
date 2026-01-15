@@ -1,205 +1,204 @@
-# AgentInvoice
+# 🏆 AgentInvoice
 
-> Auditable billing infrastructure for autonomous agents on Arc
+> Auditable billing infrastructure for AI agents on Arc with Circle integration
 
-AgentInvoice enables enterprises to audit AI agent spending with proper invoices, usage attestations, and compliance policies. Agents pay invoices from ANY supported chain using Circle Gateway's unified USDC balance, settling instantly on Arc.
+AgentInvoice provides complete blockchain-based billing infrastructure for AI agents, featuring invoice primitives, policy management, anomaly detection, and full Circle wallet integration.
+
+**🎉 Deployed via Circle Console • Live on Arc Testnet • Built for Agentic Commerce Hackathon**
+
+---
+
+## 🚀 Live Deployment
+
+**Smart Contracts (Deployed via Circle Console):**
+```
+InvoiceRegistry:   0x34158fedf9f863cfdf7da54b3baf7b2ae700b70c
+PolicyManager:     0x11dfb74caad23c1c8884646969d33a990b339886
+PaymentProcessor:  0x3e412244e13701516a3a364278e4f43ba036b864
+```
+
+**Circle Developer Wallet:**
+```
+Address: 0x264d02e95d182427db11a111d7b3d256d16f3f87
+Type: Developer-Controlled (MPC)
+```
+
+**View on Arc Explorer:**
+- [InvoiceRegistry](https://testnet.arcscan.app/address/0x34158fedf9f863cfdf7da54b3baf7b2ae700b70c)
+- [PolicyManager](https://testnet.arcscan.app/address/0x11dfb74caad23c1c8884646969d33a990b339886)
+- [PaymentProcessor](https://testnet.arcscan.app/address/0x3e412244e13701516a3a364278e4f43ba036b864)
+
+---
 
 ## 🎯 The Problem
 
-- AI agents can pay, but can't invoice properly
-- No audit trail for agent spending
-- Enterprises can't track or control agent expenses
-- Cross-chain complexity for agent treasuries
+- AI agents need proper invoicing with audit trails
+- No standardized invoice primitives for agent-to-agent payments
+- Enterprises can't track or control agent spending
+- No policy enforcement for autonomous agent payments
 
 ## ✨ The Solution
 
 AgentInvoice provides:
 
-- **Proper Invoices**: Onchain invoice primitives with usage attestation
-- **Cross-Chain Payments**: Pay from Ethereum, settle on Arc via Gateway
-- **Safety Controls**: Anomaly detection holds suspicious invoices
-- **Audit Trail**: Complete payment history for CFOs
-- **Developer Tools**: SDK, CLI, and smart contracts
+- **📋 Invoice Primitives**: Purpose-built smart contracts for agent billing
+- **🔐 Circle Integration**: Secure wallet management with MPC technology
+- **🛡️ Policy Management**: Spending limits and anomaly detection
+- **📊 Audit Trail**: Complete payment history on blockchain
+- **🛠️ Developer Tools**: SDK, CLI, and dashboard for seamless integration
+- **🌉 Cross-Chain Ready**: Circle Gateway integration for multi-chain payments
 
-## 🏗️ Architecture
+---
 
-```
-Agent Wallet (Any Chain)
-    ↓
-Gateway Unified Balance
-    ↓
-Invoice Payment (Arc)
-    ↓
-Payee Wallet (Arc)
-```
+## 🏗️ What We Built
+
+### Smart Contracts (~2,500 lines Solidity)
+- **InvoiceRegistry**: Complete invoice lifecycle (create, pay, hold, cancel)
+- **PolicyManager**: Policy enforcement with anomaly detection
+- **PaymentProcessor**: USDC payments + Circle Gateway integration
+
+### Circle Integration
+- ✅ Developer-Controlled Wallets with MPC security
+- ✅ Console-based deployment (zero gas fees)
+- ✅ SDK-based contract execution
+- ✅ Full Arc Testnet integration
+
+### Developer Tools
+- **TypeScript SDK** (~600 lines): Complete invoice management API
+- **CLI Tool** (~500 lines): Command-line interface for developers
+- **Web Dashboard**: Real-time invoice tracking and analytics
+
+---
 
 ## 📦 Project Structure
-
 ```
-agent-invoice/
+AgentInvoice/
 ├── contracts/          # Solidity smart contracts (Foundry)
-├── sdk/               # TypeScript SDK for developers
-├── cli/               # Command-line interface tool
-├── dashboard/         # Next.js web dashboard
-├── docs/              # Documentation
-└── examples/          # Usage examples & demos
+│   ├── src/           # Contract source code
+│   └── script/        # Deployment scripts
+├── sdk/               # TypeScript SDK
+│   ├── src/           # SDK source code
+│   └── dist/          # Compiled SDK
+├── cli/               # Command-line interface
+│   ├── src/           # CLI source code
+│   └── dist/          # Compiled CLI
+├── backend/           # Circle wallet integration
+│   └── scripts/       # Deployment & linking scripts
+├── dashboard-simple/  # Web dashboard
+├── examples/          # Usage examples
+└── docs/              # Documentation
 ```
 
-## C:.
-
-│   .env.template
-│   BUILD_GUIDE.md
-│   GETTING_STARTED.md
-│   PROJECT_STATUS.md
-│   quick-start.sh
-│   README.md
-│   TROUBLESHOOTING.md
-│
-├───cli
-│   │   package.json
-│   │   tsconfig.json
-│   │
-│   └───src
-│       │   index.ts
-│       │
-│       ├───commands
-│       │       create.ts
-│       │       pay.ts
-│       │       setup.ts
-│       │       status.ts
-│       │
-│       └───utils
-│               config.ts
-│
-├───contracts
-│   │   foundry.toml
-│   │
-│   ├───script
-│   │       Deploy.s.sol
-│   │
-│   ├───src
-│   │   │   InvoiceRegistry.sol
-│   │   │   PaymentProcessor.sol
-│   │   │   PolicyManager.sol
-│   │   │
-│   │   └───interfaces
-│   └───test
-│           InvoiceRegistry.t.sol
-│
-├───dashboard
-│   │   next.config.js
-│   │   package.json
-│   │
-│   └───app
-│       │   page.tsx
-│       │
-│       └───components
-│               InvoiceList.tsx
-│               InvoiceStats.tsx
-│
-├───docs
-│       DAY_1_SETUP.md
-│
-├───examples
-└───sdk
-    │   package.json
-    │   tsconfig.json
-    │
-    └───src
-        │   AgentInvoice.ts
-        │   index.ts
-        │
-        ├───services
-        │       ContractService.ts
-        │       GatewayService.ts
-        │       WalletService.ts
-        │
-        ├───types
-        │       index.ts
-        │
-        └───utils
-                helpers.ts
+---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-
-- Node.js 18+ and npm
-- Foundry (for smart contracts)
-- Git
-
-### Installation
-
-1. **Clone the repository:**
-
+### Test the Live Deployment
 ```bash
-git clone https://github.com/yourusername/agent-invoice.git
-cd agent-invoice
-```
+# Clone the repository
+git clone https://github.com/SanaAdeelKhan/AgentInvoice.git
+cd AgentInvoice
 
-2. **Set up environment:**
-
-```bash
-cp .env.template .env
-# Fill in your configuration values
-```
-
-3. **Install Foundry (for contracts):**
-
-```bash
-curl -L https://foundry.paradigm.xyz | bash
-foundryup
-```
-
-4. **Deploy contracts:**
-
-```bash
-cd contracts
-forge install
-forge test
-forge script script/Deploy.s.sol --rpc-url $ARC_TESTNET_RPC_URL --broadcast
-```
-
-5. **Install SDK:**
-
-```bash
-cd ../sdk
+# Test Circle wallet integration
+cd examples
 npm install
-npm run build
-```
+node circle-wallet-demo.js
 
-6. **Install CLI:**
-
-```bash
+# Use the CLI
 cd ../cli
 npm install
 npm run build
-npm link
+node dist/index.js list --payer 0x264d02e95d182427db11a111d7b3d256d16f3f87
+
+# View the dashboard
+open ../dashboard-simple/index.html
 ```
 
-### Usage
+---
 
-**Create an invoice:**
+## 🎯 Key Features
 
-```bash
-agent-invoice create \
-  --payer 0xAgentAddress \
-  --payee 0xBusinessAddress \
-  --amount 100 \
-  --description "API usage - January 2026"
-```
+### Invoice Management
+- ✅ Create invoices with usage attestations
+- ✅ Pay invoices with USDC
+- ✅ Hold suspicious invoices
+- ✅ Cancel pending invoices
+- ✅ Complete audit trail
 
-**Pay an invoice:**
+### Policy Enforcement
+- ✅ Spending limits per agent
+- ✅ Velocity limits (payments per hour)
+- ✅ Anomaly detection algorithms
+- ✅ Automatic holds on suspicious activity
+- ✅ Configurable thresholds
 
-```bash
-agent-invoice pay <invoice-id>
-```
+### Circle Gateway Integration
+- ✅ Cross-chain USDC transfers
+- ✅ Burn & mint attestations
+- ✅ Multi-chain invoice payments
+- ✅ Unified balance across chains
 
-**Check status:**
+### Developer Experience
+- ✅ Complete TypeScript SDK
+- ✅ CLI tool for easy integration
+- ✅ Web dashboard for monitoring
+- ✅ Comprehensive documentation
+- ✅ Usage examples
 
-```bash
-agent-invoice status <invoice-id>
-```
+---
+
+## 🛠️ Tech Stack
+
+**Blockchain:**
+- Arc Testnet (EVM L1)
+- Native USDC payments
+- Solidity 0.8.20
+
+**Circle:**
+- Developer-Controlled Wallets
+- Circle Console deployment
+- Circle Gateway (cross-chain)
+
+**Development:**
+- TypeScript + ethers.js v6
+- Foundry (contracts)
+- Node.js (backend)
+- Tailwind CSS (UI)
+
+---
+
+## 🎓 Use Cases
+
+1. **AI Agent Subscriptions**: Agents pay for premium API access
+2. **Usage-Based Billing**: Track and bill for actual API usage
+3. **Multi-Agent Marketplaces**: Agents buy/sell services
+4. **Enterprise Bot Management**: Company agents with spending policies
+5. **Cross-Chain Agent Payments**: Pay from any supported blockchain
+
+---
+
+## 📊 Project Stats
+
+- **Smart Contracts**: 3 contracts, ~2,500 lines Solidity
+- **SDK**: ~600 lines TypeScript
+- **CLI**: ~500 lines TypeScript  
+- **Deployment**: All via Circle Console during hackathon
+- **Tests**: All contracts verified and linked
+- **Gas Used**: ~0.03 USDC for deployment and linking
+
+---
+
+## 🔒 Security Features
+
+- Non-custodial (users control wallets)
+- Circle MPC wallet technology
+- Policy-based spending controls
+- Usage attestation verification
+- Anomaly detection algorithms
+- Automatic invoice holds
+- Complete audit trail
+
+---
 
 ## 📚 Documentation
 
@@ -207,75 +206,73 @@ agent-invoice status <invoice-id>
 - [Smart Contracts](./docs/contracts.md)
 - [SDK Reference](./docs/sdk.md)
 - [CLI Guide](./docs/cli.md)
+- [Circle Integration](./docs/circle.md)
 - [Examples](./examples/)
 
-## 🛠️ Tech Stack
+---
 
-- **Blockchain**: Arc (EVM L1 with USDC gas)
-- **Smart Contracts**: Solidity + Foundry
-- **Cross-Chain**: Circle Gateway
-- **SDK**: TypeScript + ethers.js
-- **Dashboard**: Next.js + Tailwind CSS
+## 🎥 Demo
 
-## 🎯 Features
+**Live Demo:**
+- Smart Contracts: View on [Arc Explorer](https://testnet.arcscan.app/address/0x34158fedf9f863cfdf7da54b3baf7b2ae700b70c)
+- Circle Wallet: `0x264d02e95d182427db11a111d7b3d256d16f3f87`
+- GitHub: https://github.com/SanaAdeelKhan/AgentInvoice
 
-### Core Features
+---
 
-- ✅ Onchain invoice storage
-- ✅ Usage attestation (prove offchain usage)
-- ✅ Cross-chain payments via Gateway
-- ✅ Sub-second settlement on Arc
-- ✅ Complete audit trail
+## 🏆 Built For
 
-### Safety Features
+**Agentic Commerce on Arc Hackathon**
 
-- ✅ Amount threshold checks
-- ✅ Velocity limits (payments per hour)
-- ✅ Whitelist/blacklist
-- ✅ Anomaly detection
-- ✅ Invoice holds with reasons
+Demonstrating:
+- Complete Circle wallet integration
+- Production-ready smart contracts
+- Developer-friendly tooling
+- Real-world use case for AI agents
 
-### Developer Features
+---
 
-- ✅ Simple SDK (3-line integration)
-- ✅ CLI tool for testing
-- ✅ TypeScript support
-- ✅ Event subscriptions
-- ✅ Comprehensive docs
+## 👥 Team
 
-## 🎓 Use Cases
+**Sana Adeel Khan**
+- Full-stack blockchain developer
+- Complete end-to-end implementation
+- Circle integration specialist
 
-1. **AI Agent Subscriptions**: Agents subscribe to premium APIs
-2. **Usage-Based Billing**: Pay for actual API calls/compute
-3. **Multi-Agent Marketplaces**: Agents buy/sell services
-4. **Enterprise SaaS Bots**: Company agents with spending limits
+---
 
-## 🔒 Security
+## 🙏 Acknowledgments
 
-- Non-custodial (agents control wallets)
-- Policy-based spending controls
-- Usage attestation verification
-- Anomaly detection
-- Open source & auditable
+Built for the Agentic Commerce on Arc Hackathon.
 
-## 🤝 Contributing
+Special thanks to:
+- **Circle** - For excellent wallet infrastructure and documentation
+- **Arc** - For the fast, USDC-native blockchain
+- **The Community** - For support and feedback
 
-Contributions welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) first.
+---
 
 ## 📄 License
 
 MIT License - see [LICENSE](./LICENSE)
 
-## 🙏 Acknowledgments
+---
 
-Built for the Agentic Commerce on Arc hackathon.
+## 🚀 Future Roadmap
 
-Powered by:
-
-- Circle & Arc
-- Circle Gateway
-- Circle Wallets
+- [ ] Multi-agent invoice batching
+- [ ] Advanced analytics dashboard
+- [ ] Integration with popular AI frameworks
+- [ ] Mainnet deployment
+- [ ] Additional blockchain support via Gateway
+- [ ] Mobile app for invoice management
 
 ---
 
-**AgentInvoice** - Because agents deserve proper billing infrastructure.
+**AgentInvoice: Building the billing infrastructure for the AI agent economy** 🚀
+
+*Powered by Circle • Built on Arc • Deployed During Hackathon*
+
+[![GitHub](https://img.shields.io/badge/GitHub-AgentInvoice-blue)](https://github.com/SanaAdeelKhan/AgentInvoice)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![Arc Testnet](https://img.shields.io/badge/Arc-Testnet-orange)](https://testnet.arcscan.app)
