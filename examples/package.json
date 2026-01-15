@@ -1,0 +1,17 @@
+{
+  "name": "agent-invoice-examples",
+  "version": "1.0.0",
+  "description": "Example usage of AgentInvoice SDK",
+  "type": "module",
+  "scripts": {
+    "demo": "node demo.js",
+    "create": "node create-invoice.js",
+    "status": "node check-status.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "sdk": "file:../sdk",
+    "ws": "^8.19.0"
+  }
+}
