@@ -73,7 +73,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">InvoiceRegistry:</span>
-                        <a href="https://testnet.arcscan.app/address/0x34158fedf9f863cfdf7da54b3baf7b2ae700b70c" 
+                        <a href="https://testnet.arcscan.io/address/0x34158fedf9f863cfdf7da54b3baf7b2ae700b70c"
                            target="_blank"
                            class="font-mono text-blue-600 hover:text-blue-800 text-xs">
                             0x3415...0b70c
@@ -81,7 +81,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">PolicyManager:</span>
-                        <a href="https://testnet.arcscan.app/address/0x11dfb74caad23c1c8884646969d33a990b339886" 
+                        <a href="https://testnet.arcscan.io/address/0x11dfb74caad23c1c8884646969d33a990b339886"
                            target="_blank"
                            class="font-mono text-blue-600 hover:text-blue-800 text-xs">
                             0x11df...9886
@@ -89,7 +89,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">PaymentProcessor:</span>
-                        <a href="https://testnet.arcscan.app/address/0x3e412244e13701516a3a364278e4f43ba036b864" 
+                        <a href="https://testnet.arcscan.io/address/0x3e412244e13701516a3a364278e4f43ba036b864"
                            target="_blank"
                            class="font-mono text-blue-600 hover:text-blue-800 text-xs">
                             0x3e41...b864
@@ -97,7 +97,7 @@
                     </div>
                     <div class="flex justify-between pt-2 border-t">
                         <span class="text-gray-600">Circle Wallet:</span>
-                        <a href="https://testnet.arcscan.app/address/0x264d02e95d182427db11a111d7b3d256d16f3f87" 
+                        <a href="https://testnet.arcscan.io/address/0x264d02e95d182427db11a111d7b3d256d16f3f87"
                            target="_blank"
                            class="font-mono text-blue-600 hover:text-blue-800 text-xs">
                             0x264d...3f87
@@ -129,16 +129,28 @@
 
         let provider, contract;
 
+        function toggleDetails(invoiceId) {
+          const details = document.getElementById(`details-${invoiceId}`);
+          const arrow = document.getElementById(`arrow-${invoiceId}`);
+          if (details.classList.contains('hidden')) {
+            details.classList.remove('hidden');
+            arrow.textContent = '▼';
+          } else {
+            details.classList.add('hidden');
+            arrow.textContent = '▶';
+          }
+        }
+
         async function init() {
           try {
             provider = new ethers.providers.JsonRpcProvider(RPC_URL);
             contract = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, provider);
-            
+
             document.getElementById('connection-status').innerHTML = `
               <p class="text-green-800">✅ Connected to Arc Testnet</p>
               <p class="text-sm text-green-600 mt-1">Registry: ${REGISTRY_ADDRESS}</p>
             `;
-            
+
             await loadInvoices();
           } catch (error) {
             console.error('Error:', error);
@@ -151,14 +163,14 @@
         async function loadInvoices() {
           try {
             const invoiceIds = await contract.getInvoicesByPayer(CIRCLE_WALLET);
-            
+
             document.getElementById('total-invoices').textContent = invoiceIds.length;
-            
+
             if (invoiceIds.length === 0) {
               document.getElementById('pending-invoices').textContent = '0';
               document.getElementById('paid-invoices').textContent = '0';
               document.getElementById('held-invoices').textContent = '0';
-              
+
               document.getElementById('invoice-list').innerHTML = `
                 <div class="text-center py-12">
                   <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,36 +183,39 @@
               `;
               return;
             }
-            
+
             const invoices = await Promise.all(
               invoiceIds.map(id => contract.getInvoice(id))
             );
-            
+
             const statuses = ['PENDING', 'PAID', 'HELD', 'CANCELLED'];
             let pending = 0, paid = 0, held = 0;
-            
+
             invoices.forEach(inv => {
               if (inv.status === 0) pending++;
               else if (inv.status === 1) paid++;
               else if (inv.status === 2) held++;
             });
-            
+
             document.getElementById('pending-invoices').textContent = pending;
             document.getElementById('paid-invoices').textContent = paid;
             document.getElementById('held-invoices').textContent = held;
-            
+
             let html = '<div class="space-y-4">';
-            
+
             invoices.forEach(invoice => {
               const statusColors = ['text-yellow-600 bg-yellow-50', 'text-green-600 bg-green-50', 'text-red-600 bg-red-50', 'text-gray-600 bg-gray-50'];
               const statusColor = statusColors[invoice.status];
-              
+
               html += `
-                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer" onclick="toggleDetails('${invoice.id}')">
                   <div class="flex justify-between items-start mb-3">
-                    <div>
-                      <p class="text-sm font-mono text-gray-500">Invoice ID</p>
-                      <p class="text-xs font-mono text-gray-900">${invoice.id}</p>
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2">
+                        <p class="text-sm font-mono text-gray-500">Invoice ID</p>
+                        <p class="text-xs font-mono text-gray-900">${invoice.id.slice(0, 20)}...</p>
+                        <span id="arrow-${invoice.id}" class="text-gray-400 text-sm">▶</span>
+                      </div>
                     </div>
                     <span class="px-3 py-1 rounded-full text-sm font-medium ${statusColor}">
                       ${statuses[invoice.status]}
@@ -217,13 +232,57 @@
                     </div>
                   </div>
                   <p class="mt-3 text-sm text-gray-600">${invoice.description}</p>
+                  
+                  <!-- Expandable Details Section -->
+                  <div id="details-${invoice.id}" class="hidden mt-4 pt-4 border-t border-gray-200">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4">
+                      <p class="text-sm font-semibold text-blue-900 mb-1">💰 Payment For:</p>
+                      <p class="text-sm text-blue-800">${invoice.description}</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p class="text-gray-500 mb-1">💳 Paid By (Payer)</p>
+                        <a href="https://testnet.arcscan.io/address/${invoice.payer}" target="_blank" class="text-blue-600 hover:underline font-mono text-xs break-all">
+                          ${invoice.payer}
+                        </a>
+                      </div>
+                      <div>
+                        <p class="text-gray-500 mb-1">🏪 Service Provider (Payee)</p>
+                        <a href="https://testnet.arcscan.io/address/${invoice.payee}" target="_blank" class="text-blue-600 hover:underline font-mono text-xs break-all">
+                          ${invoice.payee}
+                        </a>
+                      </div>
+                      <div>
+                        <p class="text-gray-500 mb-1">📅 Invoice Created</p>
+                        <p class="font-semibold">${new Date(invoice.createdAt * 1000).toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p class="text-gray-500 mb-1">✅ Payment Date</p>
+                        <p class="font-semibold">${invoice.paidAt > 0 ? new Date(invoice.paidAt * 1000).toLocaleString() : 'Not paid yet'}</p>
+                      </div>
+                      <div class="md:col-span-2">
+                        <p class="text-gray-500 mb-1">🆔 Full Invoice ID</p>
+                        <code class="text-xs bg-gray-100 px-2 py-1 rounded block break-all">${invoice.id}</code>
+                      </div>
+                      <div class="md:col-span-2">
+                        <p class="text-gray-500 mb-1">🔐 Usage Attestation Hash</p>
+                        <code class="text-xs bg-gray-100 px-2 py-1 rounded block break-all">${invoice.usageHash}</code>
+                      </div>
+                      <div class="md:col-span-2">
+                        <a href="https://testnet.arcscan.io/address/${REGISTRY_ADDRESS}" target="_blank" class="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">
+                          🔗 View Full Details on Arc Explorer
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               `;
             });
-            
+
             html += '</div>';
             document.getElementById('invoice-list').innerHTML = html;
-            
+
           } catch (error) {
             console.error('Error loading invoices:', error);
             document.getElementById('invoice-list').innerHTML = `
