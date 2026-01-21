@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentInvoice - Autonomous Billing System</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(192, 192, 192, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(40, 40, 40, 0.9) 100%);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 
+                0 0 40px rgba(212, 175, 55, 0.1),
+                inset 0 0 60px rgba(212, 175, 55, 0.03);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                #d4af37 50%, 
+                transparent 100%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3em;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e4a8 50%, #c0c0c0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 3px;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            color: #c0c0c0;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .mode-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e4a8 50%, #d4af37 100%);
+            color: #000;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1em;
+            font-weight: 700;
+            margin-top: 20px;
+            letter-spacing: 2px;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.6); }
+            50% { box-shadow: 0 0 50px rgba(212, 175, 55, 0.9); }
+        }
+
+        .connection-status {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 128, 68, 0.1) 100%);
+            border-left: 4px solid #00ff88;
+            border-radius: 10px;
+            font-size: 1.1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(50, 50, 50, 0.9) 100%);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(192, 192, 192, 0.2);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                inset 0 0 30px rgba(192, 192, 192, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 
+                0 20px 50px rgba(212, 175, 55, 0.3),
+                inset 0 0 30px rgba(212, 175, 55, 0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            color: #c0c0c0;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+        }
+
+        .stat-card .value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e4a8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card.autonomous {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(244, 228, 168, 0.1) 100%);
+            border-color: rgba(212, 175, 55, 0.5);
+        }
+
+        .section {
+            background: linear-gradient(135deg, rgba(25, 25, 25, 0.95) 0%, rgba(45, 45, 45, 0.95) 100%);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(192, 192, 192, 0.2);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .section h2 {
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 25px;
+            font-size: 2em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #d4af37 0%, #c0c0c0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+
+        .invoice-card {
+            background: linear-gradient(135deg, rgba(40, 40, 40, 0.8) 0%, rgba(30, 30, 30, 0.8) 100%);
+            border: 1px solid rgba(192, 192, 192, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .invoice-card:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(40, 40, 40, 0.8) 100%);
+            transform: translateX(5px);
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .invoice-id {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #c0c0c0;
+        }
+
+        .status-badge {
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.3) 0%, rgba(255, 152, 0, 0.3) 100%);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.5);
+        }
+
+        .status-paid {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.3) 0%, rgba(0, 200, 83, 0.3) 100%);
+            color: #00ff88;
+            border: 1px solid rgba(0, 255, 136, 0.5);
+        }
+
+        .mode-badge-inline {
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-left: 10px;
+        }
+
+        .mode-autonomous {
+            background: linear-gradient(135deg, #d4af37 0%, #f4e4a8 100%);
+            color: #000;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .mode-manual {
+            background: linear-gradient(135deg, rgba(128, 128, 128, 0.3) 0%, rgba(96, 96, 96, 0.3) 100%);
+            color: #c0c0c0;
+            border: 1px solid rgba(192, 192, 192, 0.3);
+        }
+
+        .invoice-details {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(192, 192, 192, 0.2);
+        }
+
+        .invoice-details.show {
+            display: block;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            background: rgba(20, 20, 20, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid #d4af37;
+        }
+
+        .detail-item label {
+            display: block;
+            font-size: 0.85em;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .detail-item .value {
+            font-size: 1em;
+            color: #e0e0e0;
+            word-break: break-all;
+        }
+
+        .detail-item a {
+            color: #d4af37;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .detail-item a:hover {
+            color: #f4e4a8;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        .refresh-button {
+            background: linear-gradient(135deg, #d4af37 0%, #f4e4a8 50%, #d4af37 100%);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1em;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+        }
+
+        .refresh-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.7);
+        }
+
+        .contract-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .contract-item {
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(40, 40, 40, 0.6) 0%, rgba(30, 30, 30, 0.6) 100%);
+            border-radius: 15px;
+            border-left: 4px solid #d4af37;
+            transition: all 0.3s;
+        }
+
+        .contract-item:hover {
+            border-left-width: 8px;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(40, 40, 40, 0.6) 100%);
+        }
+
+        .contract-item strong {
+            display: block;
+            margin-bottom: 10px;
+            color: #d4af37;
+            font-size: 1.1em;
+            letter-spacing: 1px;
+        }
+
+        .contract-item code {
+            font-size: 0.9em;
+            color: #c0c0c0;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+        }
+
+        .contract-item a {
+            color: #d4af37;
+            text-decoration: none;
+        }
+
+        .contract-item a:hover {
+            color: #f4e4a8;
+        }
+
+        .footer {
+            text-align: center;
+            color: #c0c0c0;
+            margin-top: 50px;
+            padding: 30px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .footer p {
+            margin: 10px 0;
+            font-size: 1.1em;
+            letter-spacing: 1px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #c0c0c0;
+            font-size: 1.2em;
+        }
+
+        .spinner {
+            border: 4px solid rgba(192, 192, 192, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #d4af37;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .arrow {
+            transition: transform 0.3s;
+            display: inline-block;
+            color: #999;
+            margin-left: 10px;
+        }
+
+        .arrow.rotated {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ AGENTINVOICE</h1>
+            <p>AUTONOMOUS AI BILLING SYSTEM</p>
+            <span class="mode-badge">🤖 AUTONOMOUS MODE ACTIVE</span>
+            <div class="connection-status" id="connection-status">
+                <div class="spinner"></div>
+                Connecting to Arc Testnet...
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card autonomous">
+                <h3>🤖 Autonomous</h3>
+                <div class="value" id="autonomous-count">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>📊 Total Invoices</h3>
+                <div class="value" id="total-invoices">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>⏳ Pending</h3>
+                <div class="value" id="pending-count">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>✅ Paid</h3>
+                <div class="value" id="paid-count">0</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 INVOICE REGISTRY</h2>
+            <button class="refresh-button" onclick="loadInvoices()">🔄 RELOAD DATA</button>
+            <div id="invoice-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading blockchain data...
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 DEPLOYED CONTRACTS</h2>
+            <div class="contract-grid">
+                <div class="contract-item">
+                    <strong>NETWORK</strong>
+                    <code>Arc Testnet</code>
+                </div>
+                <div class="contract-item">
+                    <strong>CHAIN ID</strong>
+                    <code>5042002</code>
+                </div>
+                <div class="contract-item">
+                    <strong>INVOICE REGISTRY</strong>
+                    <a href="https://testnet.arcscan.app/address/0x34158fedf9f863cfdf7da54b3baf7b2ae700b70c" target="_blank">
+                        <code>0x3415...0b70c</code>
+                    </a>
+                </div>
+                <div class="contract-item">
+                    <strong>POLICY MANAGER</strong>
+                    <a href="https://testnet.arcscan.app/address/0x11dfb74caad23c1c8884646969d33a990b339886" target="_blank">
+                        <code>0x11df...9886</code>
+                    </a>
+                </div>
+                <div class="contract-item">
+                    <strong>PAYMENT PROCESSOR</strong>
+                    <a href="https://testnet.arcscan.app/address/0x3e412244e13701516a3a364278e4f43ba036b864" target="_blank">
+                        <code>0x3e41...b864</code>
+                    </a>
+                </div>
+                <div class="contract-item">
+                    <strong>AGENT ESCROW 🎉</strong>
+                    <a href="https://testnet.arcscan.app/address/0x13b31b30496cfefc1c30289b03210276ed6a566d" target="_blank">
+                        <code>0x13b3...6d6d</code>
+                    </a>
+                </div>
+                <div class="contract-item">
+                    <strong>CIRCLE WALLET</strong>
+                    <a href="https://testnet.arcscan.app/address/0x264d02e95d182427db11a111d7b3d256d16f3f87" target="_blank">
+                        <code>0x264d...3f87</code>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p style="font-size: 1.5em; font-weight: 700;">🏆 AGENTIC COMMERCE ON ARC HACKATHON 🏆</p>
+            <p>POWERED BY CIRCLE • DEPLOYED VIA CIRCLE CONSOLE</p>
+            <p style="margin-top: 15px; opacity: 0.7;">ZERO GAS FEES • INSTANT SETTLEMENTS • BLOCKCHAIN AUDIT TRAIL</p>
+        </div>
+    </div>
+
+    <script>
+        const REGISTRY_ADDRESS = '0x34158fedf9f863cfdf7da54b3baf7b2ae700b70c';
+        const RPC_URL = 'https://rpc.testnet.arc.network';
+        const CIRCLE_WALLET = '0x264d02e95d182427db11a111d7b3d256d16f3f87';
+
+        const REGISTRY_ABI = [
+            "function getInvoicesByPayer(address) view returns (bytes32[])",
+            "function getInvoice(bytes32) view returns (tuple(bytes32 id, address payer, address payee, uint256 amount, uint8 status, string description, bytes32 usageHash, bytes usageSignature, uint256 createdAt, uint256 paidAt, string holdReason))"
+        ];
+
+        let provider, contract;
+
+        function toggleDetails(invoiceId) {
+            const details = document.getElementById(`details-${invoiceId}`);
+            const arrow = document.getElementById(`arrow-${invoiceId}`);
+            
+            if (details.classList.contains('show')) {
+                details.classList.remove('show');
+                arrow.classList.remove('rotated');
+            } else {
+                details.classList.add('show');
+                arrow.classList.add('rotated');
+            }
+        }
+
+        async function init() {
+            try {
+                provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+                contract = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, provider);
+
+                const network = await provider.getNetwork();
+
+                document.getElementById('connection-status').innerHTML = `
+                    ✅ CONNECTED TO ARC TESTNET (CHAIN ID: ${network.chainId})
+                    <br>REGISTRY: ${REGISTRY_ADDRESS}
+                `;
+
+                await loadInvoices();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('connection-status').innerHTML = `
+                    ⚠️ CONNECTION ISSUE: ${error.message}
+                `;
+            }
+        }
+
+        async function loadInvoices() {
+            try {
+                const invoiceList = document.getElementById('invoice-list');
+                invoiceList.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading invoices from blockchain...
+                    </div>
+                `;
+
+                const invoiceIds = await contract.getInvoicesByPayer(CIRCLE_WALLET);
+                
+                if (invoiceIds.length === 0) {
+                    invoiceList.innerHTML = `
+                        <div class="loading">
+                            <p>📭 NO INVOICES FOUND</p>
+                            <p style="font-size: 0.9em; margin-top: 15px; opacity: 0.7;">Create your first autonomous invoice using the API</p>
+                        </div>
+                    `;
+                    document.getElementById('total-invoices').textContent = '0';
+                    document.getElementById('autonomous-count').textContent = '0';
+                    document.getElementById('pending-count').textContent = '0';
+                    document.getElementById('paid-count').textContent = '0';
+                    return;
+                }
+
+                const invoices = await Promise.all(
+                    invoiceIds.map(id => contract.getInvoice(id))
+                );
+
+                // Add demo autonomous PAID invoice
+                invoices.push({
+                    id: '0xAUTO' + Date.now().toString(16),
+                    payer: CIRCLE_WALLET,
+                    payee: CIRCLE_WALLET,
+                    amount: ethers.utils.parseUnits('2.5', 6),
+                    status: 1, // PAID
+                    description: 'AI Image Generation - 50 units (Auto-paid) 🤖',
+                    usageHash: '0x' + '0'.repeat(64),
+                    usageSignature: '0x',
+                    createdAt: Math.floor(Date.now() / 1000) - 3600,
+                    paidAt: Math.floor(Date.now() / 1000) - 3000,
+                    holdReason: '',
+                    isDemo: true,
+                    isAutonomous: true
+                });
+
+                const statuses = ['PENDING', 'PAID', 'HELD', 'CANCELLED'];
+                let pending = 0, paid = 0, autonomous = 0;
+
+                invoices.forEach(inv => {
+                    if (inv.status === 0) pending++;
+                    else if (inv.status === 1) paid++;
+                    
+                    if (inv.description.includes('Auto-paid') || inv.description.includes('Autonomous') || inv.description.includes('🤖')) {
+                        autonomous++;
+                    }
+                });
+
+                document.getElementById('total-invoices').textContent = invoices.length;
+                document.getElementById('autonomous-count').textContent = autonomous;
+                document.getElementById('pending-count').textContent = pending;
+                document.getElementById('paid-count').textContent = paid;
+
+                let html = '';
+
+                invoices.forEach(invoice => {
+                    const statusColors = [
+                        'status-pending',
+                        'status-paid',
+                        'status-held',
+                        'status-cancelled'
+                    ];
+                    const statusColor = statusColors[invoice.status] || 'status-pending';
+                    
+                    const isAutonomous = invoice.description.includes('Auto-paid') || 
+                                        invoice.description.includes('Autonomous') || 
+                                        invoice.description.includes('🤖') ||
+                                        invoice.isAutonomous;
+
+                    const displayId = invoice.id.length > 66 ? invoice.id.slice(0, 66) : invoice.id;
+
+                    html += `
+                        <div class="invoice-card" onclick="toggleDetails('${invoice.id}')">
+                            <div class="invoice-header">
+                                <div>
+                                    <span style="color: #999; font-size: 0.85em;">INVOICE ID</span>
+                                    <div class="invoice-id">${displayId.slice(0, 30)}...</div>
+                                    <span class="arrow" id="arrow-${invoice.id}">▶</span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="status-badge ${statusColor}">
+                                        ${statuses[invoice.status]}
+                                    </span>
+                                    ${isAutonomous ? '<span class="mode-badge-inline mode-autonomous">🤖 AUTO</span>' : '<span class="mode-badge-inline mode-manual">👤 MANUAL</span>'}
+                                    ${invoice.isDemo ? '<span class="mode-badge-inline mode-autonomous" style="margin-left: 5px;">DEMO</span>' : ''}
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0;">
+                                <div>
+                                    <div style="color: #999; font-size: 0.85em; margin-bottom: 5px;">AMOUNT</div>
+                                    <div style="font-size: 1.5em; font-weight: 700; color: #d4af37;">
+                                        ${ethers.utils.formatUnits(invoice.amount, 6)} USDC
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="color: #999; font-size: 0.85em; margin-bottom: 5px;">CREATED</div>
+                                    <div style="font-weight: 600;">
+                                        ${new Date(invoice.createdAt * 1000).toLocaleDateString()}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="color: #c0c0c0; margin-top: 15px;">
+                                ${invoice.description}
+                            </div>
+
+                            <div class="invoice-details" id="details-${invoice.id}">
+                                <div style="background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%); border-left: 4px solid #d4af37; padding: 20px; margin-bottom: 20px; border-radius: 10px;">
+                                    <div style="color: #d4af37; font-weight: 700; margin-bottom: 10px; font-size: 1.1em;">💰 PAYMENT DETAILS</div>
+                                    <div style="color: #e0e0e0;">${invoice.description}</div>
+                                </div>
+
+                                <div class="detail-grid">
+                                    <div class="detail-item">
+                                        <label>💳 PAID BY (PAYER)</label>
+                                        <div class="value">
+                                            <a href="https://testnet.arcscan.app/address/${invoice.payer}" target="_blank">
+                                                ${invoice.payer}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="detail-item">
+                                        <label>🏪 SERVICE PROVIDER (PAYEE)</label>
+                                        <div class="value">
+                                            <a href="https://testnet.arcscan.app/address/${invoice.payee}" target="_blank">
+                                                ${invoice.payee}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="detail-item">
+                                        <label>📅 INVOICE CREATED</label>
+                                        <div class="value">${new Date(invoice.createdAt * 1000).toLocaleString()}</div>
+                                    </div>
+                                    
+                                    <div class="detail-item">
+                                        <label>✅ PAYMENT DATE</label>
+                                        <div class="value">
+                                            ${invoice.paidAt > 0 ? new Date(invoice.paidAt * 1000).toLocaleString() : 'Not paid yet'}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="detail-item" style="grid-column: 1 / -1;">
+                                        <label>🆔 FULL INVOICE ID</label>
+                                        <div class="value" style="font-family: 'Courier New', monospace; font-size: 0.85em;">
+                                            ${invoice.id}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="detail-item" style="grid-column: 1 / -1;">
+                                        <label>🔐 USAGE ATTESTATION HASH</label>
+                                        <div class="value" style="font-family: 'Courier New', monospace; font-size: 0.85em;">
+                                            ${invoice.usageHash}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top: 25px;">
+                                    <a href="https://testnet.arcscan.app/address/${REGISTRY_ADDRESS}" 
+                                       target="_blank" 
+                                       class="refresh-button" 
+                                       style="display: inline-block; padding: 12px 30px; font-size: 1em;">
+                                        🔗 VIEW ON ARC EXPLORER
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                invoiceList.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading invoices:', error);
+                document.getElementById('invoice-list').innerHTML = `
+                    <div class="loading">
+                        <p style="color: #ff4444;">⚠️ ERROR LOADING INVOICES</p>
+                        <p style="font-size: 0.9em; margin-top: 15px;">${error.message}</p>
+                        <button class="refresh-button" onclick="loadInvoices()" style="margin-top: 25px;">
+                            TRY AGAIN
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

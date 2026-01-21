@@ -129,6 +129,20 @@
 
         let provider, contract;
 
+        function formatAmount(amount) {
+          try {
+            const amountBN = ethers.BigNumber.from(amount.toString());
+            // If amount is > 1 billion (corrupted old data), show as invalid
+            const oneBillion = ethers.utils.parseUnits('1000000000', 6);
+            if (amountBN.gt(oneBillion)) {
+              return '<span class="text-red-500">Invalid (old test data)</span>';
+            }
+            return ethers.utils.formatUnits(amount, 6) + ' USDC';
+          } catch (e) {
+            return '<span class="text-red-500">Error</span>';
+          }
+        }
+
         function toggleDetails(invoiceId) {
           const details = document.getElementById(`details-${invoiceId}`);
           const arrow = document.getElementById(`arrow-${invoiceId}`);
@@ -224,7 +238,7 @@
                   <div class="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p class="text-gray-500">Amount</p>
-                      <p class="font-semibold">${ethers.utils.formatUnits(invoice.amount, 6)} USDC</p>
+                      <p class="font-semibold">${formatAmount(invoice.amount)}</p>
                     </div>
                     <div>
                       <p class="text-gray-500">Created</p>
