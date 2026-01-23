@@ -14,7 +14,7 @@ contract InvoiceRegistry {
         HELD,       // Invoice held by policy manager
         CANCELLED   // Invoice cancelled
     }
-    
+
     /// @notice Invoice structure with all relevant data
     struct Invoice {
         bytes32 id;              // Unique invoice identifier
@@ -29,22 +29,25 @@ contract InvoiceRegistry {
         uint256 paidAt;          // Payment timestamp
         string holdReason;       // Reason if held by policy
     }
-    
+
     /// @notice Mapping of invoice ID to invoice data
     mapping(bytes32 => Invoice) public invoices;
-    
+
     /// @notice Mapping of payer address to their invoice IDs
     mapping(address => bytes32[]) public invoicesByPayer;
-    
+
     /// @notice Mapping of payee address to their invoice IDs
     mapping(address => bytes32[]) public invoicesByPayee;
-    
+
     /// @notice Address of the policy manager contract
     address public policyManager;
-    
+
     /// @notice Address of the payment processor contract
     address public paymentProcessor;
-    
+
+    /// @notice Address of the agent escrow contract (for autonomous payments)
+    address public agentEscrow;
+
     /// @notice Emitted when a new invoice is created
     event InvoiceCreated(
         bytes32 indexed id,
@@ -53,38 +56,44 @@ contract InvoiceRegistry {
         uint256 amount,
         string description
     );
-    
+
     /// @notice Emitted when an invoice is paid
     event InvoicePaid(
         bytes32 indexed id,
         uint256 amount,
         uint256 timestamp
     );
-    
+
     /// @notice Emitted when an invoice is held by policy
     event InvoiceHeld(
         bytes32 indexed id,
         string reason
     );
-    
+
     /// @notice Emitted when an invoice is cancelled
     event InvoiceCancelled(
         bytes32 indexed id,
         address indexed cancelledBy
     );
-    
+
     /// @notice Emitted when policy manager is updated
     event PolicyManagerUpdated(
         address indexed oldManager,
         address indexed newManager
     );
-    
+
     /// @notice Emitted when payment processor is updated
     event PaymentProcessorUpdated(
         address indexed oldProcessor,
         address indexed newProcessor
     );
-    
+
+    /// @notice Emitted when agent escrow is updated
+    event AgentEscrowUpdated(
+        address indexed oldEscrow,
+        address indexed newEscrow
+    );
+
     /**
      * @notice Initialize the invoice registry
      * @param _policyManager Address of policy manager contract
@@ -93,16 +102,16 @@ contract InvoiceRegistry {
         require(_policyManager != address(0), "Invalid policy manager");
         policyManager = _policyManager;
     }
-    
+
     /**
      * @notice Create a new invoice
      * @param _payer Address of the payer (agent wallet)
      * @param _payee Address of the payee (service provider)
-     * @param _amount Amount in USDC (18 decimals)
+     * @param _amount Amount in USDC
      * @param _description Human-readable description
-     * @param _usageHash Hash of usage attestation data
+     * @param _usageHash Hash of usage attestation
      * @param _usageSignature Service provider signature
-     * @return invoiceId Unique identifier for the created invoice
+     * @return invoiceId Unique invoice identifier
      */
     function createInvoice(
         address _payer,
@@ -115,7 +124,7 @@ contract InvoiceRegistry {
         require(_amount > 0, "Amount must be > 0");
         require(_payee != address(0), "Invalid payee");
         require(_payer != address(0), "Invalid payer");
-        
+
         // Generate unique invoice ID
         invoiceId = keccak256(
             abi.encodePacked(
@@ -128,10 +137,10 @@ contract InvoiceRegistry {
                 invoicesByPayer[_payer].length
             )
         );
-        
+
         // Ensure invoice doesn't already exist
         require(invoices[invoiceId].id == bytes32(0), "Invoice already exists");
-        
+
         // Create invoice
         Invoice storage invoice = invoices[invoiceId];
         invoice.id = invoiceId;
@@ -143,133 +152,173 @@ contract InvoiceRegistry {
         invoice.usageHash = _usageHash;
         invoice.usageSignature = _usageSignature;
         invoice.createdAt = block.timestamp;
-        
-        // Track invoice for payer and payee
+
+        // Add to indexes
         invoicesByPayer[_payer].push(invoiceId);
         invoicesByPayee[_payee].push(invoiceId);
-        
+
         emit InvoiceCreated(invoiceId, _payer, _payee, _amount, _description);
-        
+
         return invoiceId;
     }
-    
+
     /**
-     * @notice Mark invoice as paid (only PaymentProcessor)
-     * @param _invoiceId ID of the invoice to mark as paid
+     * @notice Mark an invoice as paid
+     * @param _invoiceId Invoice identifier
+     * @dev Can be called by PaymentProcessor or AgentEscrow
      */
     function markPaid(bytes32 _invoiceId) external {
-        require(msg.sender == paymentProcessor, "Only payment processor");
+        require(
+            msg.sender == paymentProcessor || msg.sender == agentEscrow,
+            "Only payment processor or agent escrow"
+        );
+        
         Invoice storage invoice = invoices[_invoiceId];
         require(invoice.id != bytes32(0), "Invoice does not exist");
         require(invoice.status == InvoiceStatus.PENDING, "Invoice not pending");
-        
+
         invoice.status = InvoiceStatus.PAID;
         invoice.paidAt = block.timestamp;
-        
+
         emit InvoicePaid(_invoiceId, invoice.amount, block.timestamp);
     }
-    
+
     /**
-     * @notice Hold invoice (only PolicyManager)
-     * @param _invoiceId ID of the invoice to hold
-     * @param _reason Reason for holding the invoice
+     * @notice Hold an invoice for review
+     * @param _invoiceId Invoice identifier
+     * @param _reason Reason for holding
      */
     function holdInvoice(bytes32 _invoiceId, string memory _reason) external {
         require(msg.sender == policyManager, "Only policy manager");
+
         Invoice storage invoice = invoices[_invoiceId];
         require(invoice.id != bytes32(0), "Invoice does not exist");
         require(invoice.status == InvoiceStatus.PENDING, "Invoice not pending");
-        
+
         invoice.status = InvoiceStatus.HELD;
         invoice.holdReason = _reason;
-        
+
         emit InvoiceHeld(_invoiceId, _reason);
     }
-    
+
     /**
-     * @notice Cancel invoice (payer or payee can cancel pending invoices)
-     * @param _invoiceId ID of the invoice to cancel
+     * @notice Cancel an invoice
+     * @param _invoiceId Invoice identifier
      */
     function cancelInvoice(bytes32 _invoiceId) external {
         Invoice storage invoice = invoices[_invoiceId];
         require(invoice.id != bytes32(0), "Invoice does not exist");
-        require(invoice.status == InvoiceStatus.PENDING, "Invoice not pending");
         require(
             msg.sender == invoice.payer || msg.sender == invoice.payee,
-            "Only payer or payee can cancel"
+            "Only payer or payee"
         );
-        
+        require(invoice.status == InvoiceStatus.PENDING, "Only pending invoices");
+
         invoice.status = InvoiceStatus.CANCELLED;
-        
+
         emit InvoiceCancelled(_invoiceId, msg.sender);
     }
-    
+
     /**
      * @notice Get invoice details
-     * @param _invoiceId ID of the invoice
-     * @return invoice Invoice struct with all data
+     * @param _invoiceId Invoice identifier
      */
-    function getInvoice(bytes32 _invoiceId) 
-        external 
-        view 
-        returns (Invoice memory invoice) 
+    function getInvoice(bytes32 _invoiceId)
+        external
+        view
+        returns (
+            bytes32 id,
+            address payer,
+            address payee,
+            uint256 amount,
+            InvoiceStatus status,
+            string memory description,
+            bytes32 usageHash,
+            bytes memory usageSignature,
+            uint256 createdAt,
+            uint256 paidAt,
+            string memory holdReason
+        )
     {
-        invoice = invoices[_invoiceId];
+        Invoice storage invoice = invoices[_invoiceId];
         require(invoice.id != bytes32(0), "Invoice does not exist");
-        return invoice;
+
+        return (
+            invoice.id,
+            invoice.payer,
+            invoice.payee,
+            invoice.amount,
+            invoice.status,
+            invoice.description,
+            invoice.usageHash,
+            invoice.usageSignature,
+            invoice.createdAt,
+            invoice.paidAt,
+            invoice.holdReason
+        );
     }
-    
+
     /**
      * @notice Get all invoice IDs for a payer
-     * @param _payer Address of the payer
-     * @return Array of invoice IDs
      */
-    function getInvoicesByPayer(address _payer) 
-        external 
-        view 
-        returns (bytes32[] memory) 
+    function getInvoicesByPayer(address _payer)
+        external
+        view
+        returns (bytes32[] memory)
     {
         return invoicesByPayer[_payer];
     }
-    
+
     /**
      * @notice Get all invoice IDs for a payee
-     * @param _payee Address of the payee
-     * @return Array of invoice IDs
      */
-    function getInvoicesByPayee(address _payee) 
-        external 
-        view 
-        returns (bytes32[] memory) 
+    function getInvoicesByPayee(address _payee)
+        external
+        view
+        returns (bytes32[] memory)
     {
         return invoicesByPayee[_payee];
     }
-    
+
     /**
-     * @notice Update policy manager address (only current policy manager)
-     * @param _newPolicyManager Address of new policy manager
+     * @notice Update policy manager address
+     * @param _newPolicyManager New policy manager address
      */
     function updatePolicyManager(address _newPolicyManager) external {
         require(msg.sender == policyManager, "Only policy manager");
         require(_newPolicyManager != address(0), "Invalid address");
-        
+
         address oldManager = policyManager;
         policyManager = _newPolicyManager;
-        
+
         emit PolicyManagerUpdated(oldManager, _newPolicyManager);
     }
-    
+
     /**
-     * @notice Set payment processor address (only policy manager)
-     * @param _paymentProcessor Address of payment processor
+     * @notice Set payment processor address
+     * @param _paymentProcessor Payment processor address
      */
     function setPaymentProcessor(address _paymentProcessor) external {
         require(msg.sender == policyManager, "Only policy manager");
         require(_paymentProcessor != address(0), "Invalid address");
-        
+
         address oldProcessor = paymentProcessor;
         paymentProcessor = _paymentProcessor;
-        
+
         emit PaymentProcessorUpdated(oldProcessor, _paymentProcessor);
+    }
+
+    /**
+     * @notice Set agent escrow address
+     * @param _agentEscrow Agent escrow address
+     */
+    function setAgentEscrow(address _agentEscrow) external {
+        require(msg.sender == policyManager, "Only policy manager");
+        require(_agentEscrow != address(0), "Invalid address");
+
+        address oldEscrow = agentEscrow;
+        agentEscrow = _agentEscrow;
+
+        emit AgentEscrowUpdated(oldEscrow, _agentEscrow);
     }
 }

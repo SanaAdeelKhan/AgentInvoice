@@ -337,20 +337,20 @@
                 </div>
                 <div class="contract-item">
                     <strong>INVOICE REGISTRY</strong>
-                    <a href="https://testnet.arcscan.app/address/0x34158fedf9f863cfdf7da54b3baf7b2ae700b70c" target="_blank">
-                        <code>0x3415...0b70c</code>
+                    <a href="https://testnet.arcscan.app/address/0xd56fbd9277263db3cbe50d4d590d4199a109ec3e" target="_blank">
+                        <code>0xd56f...9ec3e</code>
                     </a>
                 </div>
                 <div class="contract-item">
                     <strong>PAYMENT PROCESSOR</strong>
-                    <a href="https://testnet.arcscan.app/address/0x3e412244e13701516a3a364278e4f43ba036b864" target="_blank">
-                        <code>0x3e41...b864</code>
+                    <a href="https://testnet.arcscan.app/address/0x0da221d7844b992e543cf3030c8116cc02f3e911" target="_blank">
+                        <code>0x0da2...e911</code>
                     </a>
                 </div>
                 <div class="contract-item">
                     <strong>AGENT ESCROW 🎉</strong>
-                    <a href="https://testnet.arcscan.app/address/0x13b31b30496cfefc1c30289b03210276ed6a566d" target="_blank">
-                        <code>0x13b3...6d6d</code>
+                    <a href="https://testnet.arcscan.app/address/0x4a7d7c86fe61ca6f409c9dc5ce7f3441af7f0b3d" target="_blank">
+                        <code>0x4a7d...0b3d</code>
                     </a>
                 </div>
                 <div class="contract-item">
@@ -370,13 +370,13 @@
     </div>
 
     <script>
-        const REGISTRY_ADDRESS = '0x34158fedf9f863cfdf7da54b3baf7b2ae700b70c';
+        const REGISTRY_ADDRESS = '0xd56fbd9277263db3cbe50d4d590d4199a109ec3e';
         const RPC_URL = 'https://rpc.testnet.arc.network';
         const CIRCLE_WALLET = '0x264d02e95d182427db11a111d7b3d256d16f3f87';
 
         const REGISTRY_ABI = [
             "function getInvoicesByPayer(address) view returns (bytes32[])",
-            "function getInvoice(bytes32) view returns (tuple(bytes32 id, address payer, address payee, uint256 amount, uint8 status, string description, bytes32 usageHash, bytes usageSignature, uint256 createdAt, uint256 paidAt, string holdReason))"
+            "function getInvoice(bytes32) view returns (bytes32,address,address,uint256,uint8,string,bytes32,bytes,uint256,uint256,string)"
         ];
 
         let provider, contract;
@@ -435,10 +435,10 @@
                 let pending = 0, paid = 0, auto = 0;
 
                 invoices.forEach(inv => {
-                    if (inv.status === 0) pending++;
-                    else if (inv.status === 1) paid++;
+                    if (inv[4] === 0) pending++;
+                    else if (inv[4] === 1) paid++;
                     
-                    if (inv.description.includes('Auto-paid') || inv.description.includes('Autonomous')) {
+                    if (inv[5].includes('Auto-paid') || inv[5].includes('Autonomous')) {
                         auto++;
                     }
                 });
@@ -450,9 +450,9 @@
                 let html = '';
 
                 invoices.forEach((invoice, index) => {
-                    const statusColor = invoice.status === 1 ? 'status-paid' : 'status-pending';
-                    const isAuto = invoice.description.includes('Auto-paid') || invoice.description.includes('Autonomous');
-                    const amount = ethers.utils.formatUnits(invoice.amount, 6);
+                    const statusColor = invoice[4] === 1 ? 'status-paid' : 'status-pending';
+                    const isAuto = invoice[5].includes('Auto-paid') || invoice[5].includes('Autonomous');
+                    const amount = ethers.utils.formatUnits(invoice[3], 6);
 
                     html += `
                         <div class="invoice-card" onclick="toggleDetails('${index}')">
@@ -460,12 +460,12 @@
                                 <div>
                                     <span style="color: #999; font-size: 0.9em;">INVOICE ID</span>
                                     <div style="font-family: 'Courier New'; color: #c0c0c0; margin-top: 5px;">
-                                        ${invoice.id.substring(0, 30)}...
+                                        ${invoice[0].substring(0, 30)}...
                                         <span id="arrow-${index}" style="color: #999; margin-left: 10px;">▶</span>
                                     </div>
                                 </div>
                                 <div style="text-align: right;">
-                                    <span class="status-badge ${statusColor}">${statuses[invoice.status]}</span>
+                                    <span class="status-badge ${statusColor}">${statuses[invoice[4]]}</span>
                                     ${isAuto ? '<span class="mode-badge-inline mode-autonomous">🤖 AUTO</span>' : '<span class="mode-badge-inline mode-manual">👤 MANUAL</span>'}
                                 </div>
                             </div>
@@ -477,41 +477,41 @@
                                 </div>
                                 <div>
                                     <div style="color: #999; font-size: 0.9em; margin-bottom: 5px;">CREATED</div>
-                                    <div style="font-weight: 600;">${new Date(invoice.createdAt * 1000).toLocaleDateString()}</div>
+                                    <div style="font-weight: 600;">${new Date(invoice[8] * 1000).toLocaleDateString()}</div>
                                 </div>
                             </div>
                             
-                            <div style="color: #c0c0c0;">${invoice.description}</div>
+                            <div style="color: #c0c0c0;">${invoice[5]}</div>
 
                             <div class="details" id="details-${index}">
                                 <div style="background: rgba(212, 175, 55, 0.1); border-left: 4px solid #d4af37; padding: 20px; margin: 20px 0; border-radius: 10px;">
                                     <div style="color: #d4af37; font-weight: 700; margin-bottom: 10px;">💰 PAYMENT DETAILS</div>
-                                    <div>${invoice.description}</div>
+                                    <div>${invoice[5]}</div>
                                 </div>
                                 
                                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
                                     <div style="background: rgba(20,20,20,0.5); padding: 15px; border-radius: 10px; border-left: 3px solid #d4af37;">
                                         <div style="color: #999; font-size: 0.9em; margin-bottom: 5px;">💳 PAYER</div>
-                                        <a href="https://testnet.arcscan.app/address/${invoice.payer}" target="_blank" style="color: #d4af37; word-break: break-all; font-size: 0.9em;">
-                                            ${invoice.payer}
+                                        <a href="https://testnet.arcscan.app/address/${invoice[1]}" target="_blank" style="color: #d4af37; word-break: break-all; font-size: 0.9em;">
+                                            ${invoice[1]}
                                         </a>
                                     </div>
                                     
                                     <div style="background: rgba(20,20,20,0.5); padding: 15px; border-radius: 10px; border-left: 3px solid #d4af37;">
                                         <div style="color: #999; font-size: 0.9em; margin-bottom: 5px;">🏪 PAYEE</div>
-                                        <a href="https://testnet.arcscan.app/address/${invoice.payee}" target="_blank" style="color: #d4af37; word-break: break-all; font-size: 0.9em;">
-                                            ${invoice.payee}
+                                        <a href="https://testnet.arcscan.app/address/${invoice[2]}" target="_blank" style="color: #d4af37; word-break: break-all; font-size: 0.9em;">
+                                            ${invoice[2]}
                                         </a>
                                     </div>
                                     
                                     <div style="background: rgba(20,20,20,0.5); padding: 15px; border-radius: 10px; border-left: 3px solid #d4af37;">
                                         <div style="color: #999; font-size: 0.9em; margin-bottom: 5px;">📅 CREATED</div>
-                                        <div>${new Date(invoice.createdAt * 1000).toLocaleString()}</div>
+                                        <div>${new Date(invoice[8] * 1000).toLocaleString()}</div>
                                     </div>
                                     
                                     <div style="background: rgba(20,20,20,0.5); padding: 15px; border-radius: 10px; border-left: 3px solid #d4af37;">
                                         <div style="color: #999; font-size: 0.9em; margin-bottom: 5px;">✅ PAID</div>
-                                        <div>${invoice.paidAt > 0 ? new Date(invoice.paidAt * 1000).toLocaleString() : 'Not paid yet'}</div>
+                                        <div>${invoice[9] > 0 ? new Date(invoice[9] * 1000).toLocaleString() : 'Not paid yet'}</div>
                                     </div>
                                 </div>
 
