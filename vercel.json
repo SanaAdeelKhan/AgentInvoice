@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "name": "agentinvoice-dashboard",
+  "builds": [
+    {
+      "src": "dashboard-autonomous/index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/dashboard-autonomous/$1"
+    }
+  ]
+}
