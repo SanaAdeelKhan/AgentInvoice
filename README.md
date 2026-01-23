@@ -13,6 +13,72 @@
 
 ---
 
+## 🎉 **V2 UPDATE: TRUE AUTONOMOUS PAYMENTS NOW LIVE!** (January 23, 2026)
+
+**Breaking News:** We've deployed V2 contracts that enable **100% autonomous payments with ZERO human intervention!**
+
+### ✅ What Changed in V2?
+
+**V1 (Legacy):** Autonomous invoices were created but required manual payment  
+**V2 (Production):** Invoices are created AND paid in **ONE transaction** automatically!
+
+### 🔥 V2 Live Proof
+
+**Invoice Verified on Blockchain:**
+- **Invoice ID:** `0x29821b5e683d8a484c697269dd9e9c5c480273bc3719218ba2cd4ec657497918`
+- **Amount:** 0.05 USDC
+- **Status:** ✅ **PAID AUTOMATICALLY**
+- **Mode:** 🤖 **AUTONOMOUS (V2)**
+- **Human Intervention:** **ZERO**
+- **Verification:** [View on Arc Explorer](https://testnet.arcscan.app/address/0xd56fbd9277263db3cbe50d4d590d4199a109ec3e)
+
+### 🚀 V2 Contract Addresses (Arc Testnet)
+
+**Production Autonomous Mode:**
+- **InvoiceRegistry V2:** `0xd56fbd9277263db3cbe50d4d590d4199a109ec3e`
+- **AgentEscrow V2:** `0x4a7d7c86fe61ca6f409c9dc5ce7f3441af7f0b3d`
+- **PaymentProcessor V2:** `0x0da221d7844b992e543cf3030c8116cc02f3e911`
+- **PolicyManager V2:** `0xe300509c58189372cfdd51ee8b2d49d5035be6b3`
+
+**Legacy Manual Mode (V1):**
+- **InvoiceRegistry V1:** `0x34158fedf9f863cfdf7da54b3baf7b2ae700b70c`
+- **AgentEscrow V1:** `0x13b31b30496cfefc1c30289b03210276ed6a566d`
+- **PaymentProcessor V1:** `0x3e412244e13701516a3a364278e4f43ba036b864`
+- **PolicyManager V1:** `0x11dfb74caad23c1c8884646969d33a990b339886`
+
+### 📊 Current Stats (V1 + V2)
+
+- **Total Invoices:** 16 (15 V1 + 1 V2)
+- **V1 Manual:** 15 invoices (3 paid manually, 12 pending)
+- **V2 Autonomous:** 1 invoice ✅ **PAID AUTOMATICALLY**
+- **Circle Transactions:** 50+ total
+- **True Autonomy:** **ACHIEVED** 🎉
+
+### 🎯 Try V2 Now
+```bash
+cd backend
+
+# 1. Fund V2 escrow
+node fund-v2-escrow.js
+
+# 2. Test autonomous payment
+node test-v2-autonomous.js
+
+# 3. Verify it's PAID
+node verify-v2-invoice-paid.js
+# Expected: Status = PAID ✅
+```
+
+### 🔗 Live Dashboard
+
+**View V2 in action:** `dashboard-autonomous/index.html`
+- Shows V2 invoice: PAID status ✅
+- Real blockchain data
+- Autonomous mode indicator 🤖
+
+
+---
+
 ## 🎯 The Problem: AI Agents Can't Operate Autonomously
 
 Current blockchain payment systems are fundamentally broken for AI agents:
