@@ -9,7 +9,7 @@
 
 **AgentInvoice** revolutionizes how AI agents handle payments by enabling **true autonomous billing** with zero human intervention. Built during the Agentic Commerce Hackathon, this production-ready system transforms chaotic blockchain payments into enterprise-grade invoices with complete audit trails, intelligent policy enforcement, and seamless USDC integration.
 
-🎉 **Live on Arc Testnet** • **8 Real Invoices on Blockchain** • **33 Circle Transactions** • **Zero Gas Deployment**
+🎉 **Live on Arc Testnet** • [**Live Dashboard**](https://agent-invoice.vercel.app/) • **16 Total Invoices** • **V2 Autonomous Payment WORKING**
 
 ---
 
@@ -71,7 +71,7 @@ node verify-v2-invoice-paid.js
 
 ### 🔗 Live Dashboard
 
-**View V2 in action:** `dashboard-autonomous/index.html`
+**View V2 in action:** [https://agent-invoice.vercel.app/](https://agent-invoice.vercel.app/) 🔗 **LIVE NOW!**
 - Shows V2 invoice: PAID status ✅
 - Real blockchain data
 - Autonomous mode indicator 🤖
