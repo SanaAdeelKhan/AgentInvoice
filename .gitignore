@@ -1,33 +1,58 @@
 # Dependencies
 node_modules/
-npm-debug.log*
+package-lock.json
 
-# Environment variables
+# Environment files - CRITICAL!
 .env
-*.env
-!.env.template
+.env.local
+.env.production
+.env.*.local
+.env.backup
+**/.env
 
 # Build outputs
 dist/
 build/
-.next/
 out/
+lib/
+coverage/
+.cache/
+*.tsbuildinfo
+
+# Contracts (Foundry)
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+
+# Logs
+*.log
+logs/
+*.log.*
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Foundry
-cache/
-broadcast/
-out/
-
-# Logs
-*.log
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.old
+*.backup
 
 # Local config
 .agent-invoice/
+cli/.env
+backend/.env
+api/.env
+
+# Testing
+.nyc_output/
+test-outputs/

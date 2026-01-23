@@ -1,9 +1,12 @@
+import 'dotenv/config';
 #!/usr/bin/env node
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { setupCommand } from './commands/setup';
 import { statusCommand } from './commands/status';
 import { listCommand } from './commands/list';
+import { createCommand } from './commands/create';
+import { payCommand } from './commands/pay';
 
 const program = new Command();
 
@@ -16,6 +19,8 @@ program
 program.addCommand(setupCommand);
 program.addCommand(statusCommand);
 program.addCommand(listCommand);
+program.addCommand(createCommand);
+program.addCommand(payCommand);
 
 // Handle unknown commands
 program.on('command:*', () => {
